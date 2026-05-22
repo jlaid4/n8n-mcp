@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚔️ مملكة الظلام - لعبة RPG</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --panel: #12121a;
+    --border: #2a2a3a;
+    --accent: #c8a000;
+    --accent2: #7a3fff;
+    --red: #cc3333;
+    --green: #33cc66;
+    --blue: #3399ff;
+    --text: #e0d8c0;
+    --muted: #666;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Amiri', serif;
+    font-size: 16px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; }
+  .screen.active { display: flex; }
+
+  /* ===== TITLE SCREEN ===== */
+  #title-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at center, #1a0a2e 0%, #0a0a0f 70%);
+    text-align: center;
+    padding: 20px;
+  }
+
+  .title-art {
+    font-size: clamp(40px, 8vw, 80px);
+    text-shadow: 0 0 30px var(--accent), 0 0 60px #7a3fff44;
+    margin-bottom: 10px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { text-shadow: 0 0 30px var(--accent), 0 0 60px #7a3fff44; }
+    50% { text-shadow: 0 0 50px var(--accent), 0 0 100px #7a3fff88; }
+  }
+
+  .title-main {
+    font-size: clamp(28px, 5vw, 52px);
+    color: var(--accent);
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+    text-shadow: 0 0 20px var(--accent);
+  }
+
+  .title-sub {
+    font-size: clamp(14px, 2.5vw, 22px);
+    color: #9988bb;
+    margin-bottom: 50px;
+    letter-spacing: 2px;
+  }
+
+  .btn {
+    background: linear-gradient(135deg, #2a1a4a, #1a0a2e);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 14px 40px;
+    font-family: 'Amiri', serif;
+    font-size: 20px;
+    cursor: pointer;
+    margin: 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    min-width: 200px;
+    letter-spacing: 2px;
+  }
+
+  .btn:hover {
+    background: linear-gradient(135deg, #3a2a5a, #2a1a4e);
+    box-shadow: 0 0 20px var(--accent)55;
+    transform: translateY(-2px);
+  }
+
+  .btn:active { transform: translateY(0); }
+
+  .btn.red { border-color: var(--red); color: var(--red); }
+  .btn.red:hover { box-shadow: 0 0 20px var(--red)55; }
+  .btn.green { border-color: var(--green); color: var(--green); }
+  .btn.green:hover { box-shadow: 0 0 20px var(--green)55; }
+  .btn.blue { border-color: var(--blue); color: var(--blue); }
+  .btn.blue:hover { box-shadow: 0 0 20px var(--blue)55; }
+  .btn.disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn.disabled:hover { transform: none; box-shadow: none; }
+
+  /* ===== CHARACTER CREATION ===== */
+  #create-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    background: radial-gradient(ellipse at top, #0a1a0a 0%, #0a0a0f 60%);
+  }
+
+  .create-box {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 30px;
+    max-width: 700px;
+    width: 100%;
+  }
+
+  .create-box h2 {
+    text-align: center;
+    color: var(--accent);
+    font-size: 28px;
+    margin-bottom: 24px;
+    letter-spacing: 3px;
+  }
+
+  .form-group { margin-bottom: 20px; }
+
+  .form-group label {
+    display: block;
+    color: #9988bb;
+    margin-bottom: 8px;
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+
+  .form-group input {
+    width: 100%;
+    background: #0a0a12;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    font-family: 'Amiri', serif;
+    font-size: 18px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus { border-color: var(--accent); }
+
+  .class-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .class-card {
+    background: #0a0a12;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .class-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+  .class-card.selected { border-color: var(--accent); background: #1a1020; box-shadow: 0 0 15px var(--accent)33; }
+
+  .class-icon { font-size: 36px; margin-bottom: 8px; }
+  .class-name { color: var(--accent); font-size: 18px; font-weight: bold; margin-bottom: 6px; }
+  .class-desc { color: #888; font-size: 13px; line-height: 1.5; }
+  .class-stats { margin-top: 8px; }
+  .stat-row { display: flex; justify-content: space-between; font-size: 13px; color: #aaa; margin-top: 3px; }
+  .stat-bar { display: flex; gap: 2px; margin-top: 2px; }
+  .stat-pip { width: 10px; height: 6px; border-radius: 1px; background: #222; }
+  .stat-pip.filled { background: var(--accent); }
+
+  /* ===== MAIN GAME ===== */
+  #game-screen {
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .game-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr 220px;
+    grid-template-rows: auto 1fr auto;
+    gap: 0;
+    min-height: 100vh;
+  }
+
+  /* TOP BAR */
+  .top-bar {
+    grid-column: 1 / -1;
+    background: #0d0d15;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .hero-name-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .hero-class-icon { font-size: 24px; }
+
+  .hero-name-text {
+    font-size: 18px;
+    color: var(--accent);
+    font-weight: bold;
+  }
+
+  .hero-level {
+    font-size: 13px;
+    color: #888;
+    background: #1a1020;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 2px 10px;
+  }
+
+  .top-stats {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex: 1;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .stat-widget {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .stat-label { font-size: 11px; color: #666; letter-spacing: 1px; }
+
+  .stat-bar-wrap {
+    width: 100px;
+    height: 10px;
+    background: #1a1a2a;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid #2a2a3a;
+  }
+
+  .stat-fill { height: 100%; border-radius: 5px; transition: width 0.4s ease; }
+  .stat-fill.hp { background: linear-gradient(90deg, #cc2233, #ff4455); }
+  .stat-fill.mp { background: linear-gradient(90deg, #2233cc, #4455ff); }
+  .stat-fill.xp { background: linear-gradient(90deg, #aaaa00, #ffcc00); }
+
+  .stat-val { font-size: 12px; color: #aaa; }
+
+  .top-gold {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #1a1000;
+    border: 1px solid #554400;
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-size: 16px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* LEFT PANEL - location/nav */
+  .left-panel {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 16px 12px;
+    overflow-y: auto;
+  }
+
+  .panel-title {
+    color: #666;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .location-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .loc-btn {
+    background: #0a0a12;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Amiri', serif;
+    font-size: 15px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: right;
+  }
+
+  .loc-btn:hover:not(.locked) { border-color: var(--accent); background: #1a1020; }
+  .loc-btn.active { border-color: var(--accent); background: #1a1020; color: var(--accent); }
+  .loc-btn.locked { opacity: 0.4; cursor: not-allowed; }
+  .loc-level { font-size: 11px; color: #555; margin-right: auto; }
+
+  /* CENTER - main content */
+  .main-content {
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .location-header {
+    text-align: center;
+    padding: 20px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .location-emoji { font-size: 48px; margin-bottom: 8px; }
+  .location-name { font-size: 24px; color: var(--accent); letter-spacing: 3px; }
+  .location-desc { color: #888; font-size: 14px; margin-top: 8px; line-height: 1.6; }
+
+  .action-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .action-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .action-card:hover:not(.disabled) { border-color: var(--accent); background: #1a1020; transform: translateY(-2px); }
+  .action-card.disabled { opacity: 0.4; cursor: not-allowed; }
+  .action-icon { font-size: 28px; margin-bottom: 6px; }
+  .action-name { color: var(--accent); font-size: 16px; margin-bottom: 4px; }
+  .action-desc { color: #666; font-size: 13px; }
+
+  /* LOG */
+  .log-box {
+    background: #050508;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    height: 180px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .log-entry { margin-bottom: 2px; }
+  .log-entry.system { color: #666; }
+  .log-entry.combat { color: #ff8866; }
+  .log-entry.combat-enemy { color: #cc4422; }
+  .log-entry.heal { color: var(--green); }
+  .log-entry.loot { color: var(--accent); }
+  .log-entry.level { color: #ffcc00; font-size: 15px; font-weight: bold; }
+  .log-entry.story { color: #bb88ff; }
+  .log-entry.shop { color: #55aaff; }
+
+  /* RIGHT PANEL - stats/inventory */
+  .right-panel {
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+    padding: 16px 12px;
+    overflow-y: auto;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .stat-box {
+    background: #0a0a12;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px;
+    text-align: center;
+  }
+
+  .stat-box-label { font-size: 11px; color: #555; letter-spacing: 1px; display: block; }
+  .stat-box-val { font-size: 18px; color: var(--text); font-weight: bold; }
+  .stat-box-val.red { color: var(--red); }
+  .stat-box-val.blue { color: var(--blue); }
+  .stat-box-val.green { color: var(--green); }
+  .stat-box-val.gold { color: var(--accent); }
+
+  .inv-list { display: flex; flex-direction: column; gap: 4px; }
+
+  .inv-item {
+    background: #0a0a12;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .inv-item:hover { border-color: var(--accent); }
+  .inv-icon { font-size: 18px; }
+  .inv-name { flex: 1; color: var(--text); }
+  .inv-qty { color: #666; font-size: 12px; }
+
+  .use-btn {
+    background: #1a1020;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: 'Amiri', serif;
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+
+  .use-btn:hover { background: #2a2030; }
+
+  /* ===== BATTLE SCREEN ===== */
+  #battle-screen {
+    flex-direction: column;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at center, #1a0505 0%, #0a0a0f 70%);
+  }
+
+  .battle-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .battle-arena {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 20px;
+    align-items: center;
+    width: 100%;
+    max-width: 900px;
+  }
+
+  .combatant-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .combatant-card.hero-card { border-color: var(--blue); }
+  .combatant-card.enemy-card { border-color: var(--red); }
+
+  .combatant-art { font-size: 64px; margin-bottom: 10px; filter: drop-shadow(0 0 10px currentColor); }
+  .hero-card .combatant-art { filter: drop-shadow(0 0 10px #4455ff); }
+  .enemy-card .combatant-art { filter: drop-shadow(0 0 10px #cc2233); animation: shake 0.1s; }
+
+  .combatant-name { font-size: 20px; color: var(--text); margin-bottom: 12px; }
+
+  .combat-stat-bar {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  .combat-stat-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 3px;
+  }
+
+  .combat-bar-wrap {
+    height: 12px;
+    background: #1a1a2a;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #2a2a3a;
+  }
+
+  .combat-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.4s ease;
+  }
+
+  .combat-bar-fill.hp { background: linear-gradient(90deg, #aa1122, #ff3344); }
+  .combat-bar-fill.mp { background: linear-gradient(90deg, #1122aa, #3344ff); }
+
+  .vs-text {
+    font-size: 32px;
+    color: var(--accent);
+    text-shadow: 0 0 20px var(--accent);
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .battle-log {
+    background: #050508;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    height: 120px;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 900px;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 900px;
+  }
+
+  .skill-btn {
+    background: linear-gradient(135deg, #1a1020, #0a0a12);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 14px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Amiri', serif;
+    font-size: 14px;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .skill-btn:hover:not(:disabled) { border-color: var(--accent); background: #2a1030; }
+  .skill-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .skill-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+  .skill-name { color: var(--accent); display: block; margin-bottom: 2px; }
+  .skill-cost { color: var(--blue); font-size: 12px; }
+  .skill-dmg { color: var(--red); font-size: 12px; }
+
+  /* ===== SHOP ===== */
+  #shop-screen {
+    flex-direction: column;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at top, #0a0a1a 0%, #0a0a0f 60%);
+  }
+
+  .shop-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+    gap: 20px;
+    min-height: 100vh;
+  }
+
+  .shop-header {
+    text-align: center;
+  }
+
+  .shop-title { font-size: 36px; color: var(--accent); letter-spacing: 4px; }
+  .shop-gold { font-size: 20px; color: #ffcc44; margin-top: 8px; }
+
+  .shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+    width: 100%;
+    max-width: 900px;
+  }
+
+  .shop-item {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .shop-item:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .shop-icon { font-size: 36px; margin-bottom: 8px; }
+  .shop-name { color: var(--accent); font-size: 18px; margin-bottom: 4px; }
+  .shop-desc { color: #888; font-size: 13px; margin-bottom: 12px; line-height: 1.5; }
+  .shop-price { color: #ffcc44; font-size: 16px; margin-bottom: 10px; }
+
+  /* ===== GAME OVER / WIN ===== */
+  #gameover-screen, #win-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 20px;
+  }
+
+  #gameover-screen { background: radial-gradient(ellipse at center, #1a0000 0%, #0a0a0f 70%); }
+  #win-screen { background: radial-gradient(ellipse at center, #1a1000 0%, #0a0a0f 70%); }
+
+  .big-icon { font-size: 80px; margin-bottom: 20px; animation: float 3s ease-in-out infinite; }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  .end-title { font-size: 48px; margin-bottom: 16px; }
+  .end-title.dead { color: var(--red); text-shadow: 0 0 30px var(--red); }
+  .end-title.win { color: var(--accent); text-shadow: 0 0 30px var(--accent); }
+  .end-msg { color: #aaa; font-size: 18px; line-height: 1.8; max-width: 500px; margin-bottom: 30px; }
+
+  /* ===== HEAL ANIMATION ===== */
+  @keyframes flash-green {
+    0% { background: #0a2a1a; }
+    50% { background: #1a4a2a; }
+    100% { background: var(--panel); }
+  }
+
+  .flash-heal { animation: flash-green 0.5s ease; }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+
+  .shake { animation: shake 0.3s ease; }
+
+  /* ===== DAMAGE FLOATER ===== */
+  .damage-floater {
+    position: fixed;
+    font-size: 24px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 999;
+    animation: floatUp 1s ease forwards;
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-60px); }
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .game-layout { grid-template-columns: 1fr; grid-template-rows: auto; }
+    .left-panel, .right-panel { display: none; }
+    .top-bar { flex-wrap: wrap; }
+    .top-stats { gap: 10px; }
+    .stat-bar-wrap { width: 70px; }
+    .class-grid { grid-template-columns: 1fr; }
+    .skills-grid { grid-template-columns: repeat(2, 1fr); }
+    .battle-arena { grid-template-columns: 1fr; }
+    .vs-text { display: none; }
+    .action-grid { grid-template-columns: 1fr; }
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0a0a0f; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3a3a4a; }
+
+  .quest-box {
+    background: var(--panel);
+    border: 1px solid #3a2a5a;
+    border-radius: 6px;
+    padding: 14px;
+  }
+
+  .quest-title { color: #aa77ff; font-size: 16px; margin-bottom: 8px; }
+  .quest-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #aaa; margin-bottom: 4px; }
+  .quest-done { color: var(--green); }
+  .quest-pending { color: #666; }
+
+  .equip-tag {
+    font-size: 11px;
+    background: #1a2a1a;
+    border: 1px solid var(--green);
+    color: var(--green);
+    border-radius: 3px;
+    padding: 1px 5px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== TITLE SCREEN ==================== -->
+<div id="title-screen" class="screen active">
+  <div class="title-art">⚔️🏰🐉</div>
+  <div class="title-main">مملكة الظلام</div>
+  <div class="title-sub">~ ملحمة البطل الأخير ~</div>
+  <button class="btn" onclick="showScreen('create-screen')">🗡️ ابدأ المغامرة</button>
+  <button class="btn" onclick="loadGame()">📜 استمرار</button>
+  <div style="color:#444; font-size:12px; margin-top:40px; letter-spacing:1px;">
+    اهزم التنين الأسود وأنقذ المملكة من الظلام الأبدي
+  </div>
+</div>
+
+<!-- ==================== CREATE SCREEN ==================== -->
+<div id="create-screen" class="screen">
+  <div class="create-box">
+    <h2>⚔️ إنشاء البطل</h2>
+    <div class="form-group">
+      <label>اسم بطلك</label>
+      <input type="text" id="hero-name-input" placeholder="أدخل اسمك هنا..." maxlength="20">
+    </div>
+    <div class="form-group">
+      <label>اختر مهنتك</label>
+      <div class="class-grid">
+        <div class="class-card" onclick="selectClass('warrior')" id="class-warrior">
+          <div class="class-icon">⚔️</div>
+          <div class="class-name">المحارب</div>
+          <div class="class-desc">قوة هجومية عالية ودفاع صلب</div>
+          <div class="class-stats">
+            <div class="stat-row"><span>القوة</span><span>●●●●●</span></div>
+            <div class="stat-row"><span>الدفاع</span><span>●●●●○</span></div>
+            <div class="stat-row"><span>السرعة</span><span>●●○○○</span></div>
+            <div class="stat-row"><span>السحر</span><span>●○○○○</span></div>
+          </div>
+        </div>
+        <div class="class-card" onclick="selectClass('mage')" id="class-mage">
+          <div class="class-icon">🔮</div>
+          <div class="class-name">الساحر</div>
+          <div class="class-desc">قوة سحرية مدمرة لكن دفاع ضعيف</div>
+          <div class="class-stats">
+            <div class="stat-row"><span>القوة</span><span>●●○○○</span></div>
+            <div class="stat-row"><span>الدفاع</span><span>●●○○○</span></div>
+            <div class="stat-row"><span>السرعة</span><span>●●●○○</span></div>
+            <div class="stat-row"><span>السحر</span><span>●●●●●</span></div>
+          </div>
+        </div>
+        <div class="class-card" onclick="selectClass('rogue')" id="class-rogue">
+          <div class="class-icon">🗡️</div>
+          <div class="class-name">الخفي</div>
+          <div class="class-desc">سرعة عالية وضربات حرجة مميتة</div>
+          <div class="class-stats">
+            <div class="stat-row"><span>القوة</span><span>●●●○○</span></div>
+            <div class="stat-row"><span>الدفاع</span><span>●●○○○</span></div>
+            <div class="stat-row"><span>السرعة</span><span>●●●●●</span></div>
+            <div class="stat-row"><span>السحر</span><span>●●○○○</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn green" onclick="createHero()">✨ ابدأ المغامرة</button>
+      <button class="btn" onclick="showScreen('title-screen')">← رجوع</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MAIN GAME SCREEN ==================== -->
+<div id="game-screen" class="screen">
+  <div class="game-layout">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <div class="hero-name-bar">
+        <span class="hero-class-icon" id="ui-class-icon">⚔️</span>
+        <span class="hero-name-text" id="ui-hero-name">-</span>
+        <span class="hero-level" id="ui-level">مستوى 1</span>
+      </div>
+
+      <div class="top-stats">
+        <div class="stat-widget">
+          <span class="stat-label">❤️ الصحة</span>
+          <div class="stat-bar-wrap"><div class="stat-fill hp" id="ui-hp-bar" style="width:100%"></div></div>
+          <span class="stat-val" id="ui-hp-val">100/100</span>
+        </div>
+        <div class="stat-widget">
+          <span class="stat-label">🔵 الطاقة</span>
+          <div class="stat-bar-wrap"><div class="stat-fill mp" id="ui-mp-bar" style="width:100%"></div></div>
+          <span class="stat-val" id="ui-mp-val">50/50</span>
+        </div>
+        <div class="stat-widget">
+          <span class="stat-label">⭐ الخبرة</span>
+          <div class="stat-bar-wrap"><div class="stat-fill xp" id="ui-xp-bar" style="width:0%"></div></div>
+          <span class="stat-val" id="ui-xp-val">0/100</span>
+        </div>
+      </div>
+
+      <div class="top-gold">🪙 <span id="ui-gold">0</span></div>
+    </div>
+
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+      <div class="panel-title">🗺️ الخريطة</div>
+      <div class="location-list">
+        <div class="loc-btn active" id="loc-town" onclick="goLocation('town')">🏘️ <span>المدينة</span> <span class="loc-level"></span></div>
+        <div class="loc-btn" id="loc-forest" onclick="goLocation('forest')">🌲 <span>الغابة</span> <span class="loc-level">لv1+</span></div>
+        <div class="loc-btn locked" id="loc-cave" onclick="goLocation('cave')">🕳️ <span>الكهف</span> <span class="loc-level">لv5+</span></div>
+        <div class="loc-btn locked" id="loc-castle" onclick="goLocation('castle')">🏰 <span>القلعة الشريرة</span> <span class="loc-level">لv10+</span></div>
+        <div class="loc-btn locked" id="loc-dragon" onclick="goLocation('dragon')">🐉 <span>وكر التنين</span> <span class="loc-level">لv15+</span></div>
+      </div>
+
+      <div class="panel-title" style="margin-top:24px;">📋 المهام</div>
+      <div id="quest-panel" class="quest-box">
+        <div class="quest-title">🗡️ المهمة الرئيسية</div>
+        <div class="quest-item quest-pending" id="q-forest">○ اذهب للغابة</div>
+        <div class="quest-item quest-pending" id="q-cave">○ اكتشف الكهف</div>
+        <div class="quest-item quest-pending" id="q-castle">○ ادخل القلعة</div>
+        <div class="quest-item quest-pending" id="q-dragon">○ اهزم التنين الأسود</div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <div class="location-header" id="loc-header">
+        <div class="location-emoji" id="loc-emoji">🏘️</div>
+        <div class="location-name" id="loc-name">المدينة الآمنة</div>
+        <div class="location-desc" id="loc-desc">مكان دافئ للراحة والتسوق وتجهيز المعدات قبل الخروج للمغامرة.</div>
+      </div>
+
+      <div class="action-grid" id="action-grid"></div>
+
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+        <span style="color:#555; font-size:12px; letter-spacing:2px;">📜 السجل</span>
+        <button onclick="clearLog()" style="background:none;border:1px solid #333;color:#555;padding:2px 8px;border-radius:3px;cursor:pointer;font-family:'Amiri',serif;font-size:12px;">مسح</button>
+      </div>
+      <div class="log-box" id="game-log"></div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <div class="panel-title">📊 الإحصاءات</div>
+      <div class="stats-grid">
+        <div class="stat-box"><span class="stat-box-label">⚔️ الهجوم</span><span class="stat-box-val red" id="stat-atk">0</span></div>
+        <div class="stat-box"><span class="stat-box-label">🛡️ الدفاع</span><span class="stat-box-val blue" id="stat-def">0</span></div>
+        <div class="stat-box"><span class="stat-box-label">💨 السرعة</span><span class="stat-box-val green" id="stat-spd">0</span></div>
+        <div class="stat-box"><span class="stat-box-label">🔮 السحر</span><span class="stat-box-val gold" id="stat-mag">0</span></div>
+        <div class="stat-box"><span class="stat-box-label">🎯 الحرج</span><span class="stat-box-val" id="stat-crit">0%</span></div>
+        <div class="stat-box"><span class="stat-box-label">💀 القتلى</span><span class="stat-box-val" id="stat-kills">0</span></div>
+      </div>
+
+      <div class="panel-title">🎒 المخزون</div>
+      <div class="inv-list" id="inv-list">
+        <div style="color:#555; font-size:13px; text-align:center; padding:10px;">المخزون فارغ</div>
+      </div>
+
+      <div class="panel-title" style="margin-top:14px;">🗡️ المعدات</div>
+      <div id="equip-panel" style="font-size:13px; color:#888;">
+        <div>⚔️ السلاح: <span id="eq-weapon" style="color:var(--accent)">لا شيء</span></div>
+        <div style="margin-top:4px;">🛡️ الدرع: <span id="eq-armor" style="color:var(--accent)">لا شيء</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ==================== BATTLE SCREEN ==================== -->
+<div id="battle-screen" class="screen">
+  <div class="battle-layout">
+    <div style="font-size:20px; color:var(--accent); letter-spacing:3px; text-align:center;">⚔️ المعركة ⚔️</div>
+
+    <div class="battle-arena">
+      <!-- Hero -->
+      <div class="combatant-card hero-card">
+        <div class="combatant-art" id="battle-hero-art">⚔️</div>
+        <div class="combatant-name" id="battle-hero-name">-</div>
+        <div class="combat-stat-bar">
+          <div class="combat-stat-label"><span>❤️ الصحة</span><span id="b-hero-hp-val">-</span></div>
+          <div class="combat-bar-wrap"><div class="combat-bar-fill hp" id="b-hero-hp" style="width:100%"></div></div>
+        </div>
+        <div class="combat-stat-bar">
+          <div class="combat-stat-label"><span>🔵 الطاقة</span><span id="b-hero-mp-val">-</span></div>
+          <div class="combat-bar-wrap"><div class="combat-bar-fill mp" id="b-hero-mp" style="width:100%"></div></div>
+        </div>
+      </div>
+
+      <div class="vs-text">VS</div>
+
+      <!-- Enemy -->
+      <div class="combatant-card enemy-card">
+        <div class="combatant-art" id="battle-enemy-art">👹</div>
+        <div class="combatant-name" id="battle-enemy-name">-</div>
+        <div class="combat-stat-bar">
+          <div class="combat-stat-label"><span>❤️ الصحة</span><span id="b-enemy-hp-val">-</span></div>
+          <div class="combat-bar-wrap"><div class="combat-bar-fill hp" id="b-enemy-hp" style="width:100%"></div></div>
+        </div>
+        <div class="combat-stat-bar">
+          <div class="combat-stat-label"><span>💀 النوع</span><span id="b-enemy-type">-</span></div>
+          <div class="combat-bar-wrap" style="background:#2a1a1a;">
+            <div style="height:100%;background:linear-gradient(90deg,#551122,#aa2233);border-radius:6px;" id="b-enemy-rage" ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="battle-log" id="battle-log"></div>
+
+    <div class="skills-grid" id="skills-grid"></div>
+
+    <button class="btn red" onclick="tryFlee()" id="flee-btn">🏃 الفرار</button>
+  </div>
+</div>
+
+<!-- ==================== SHOP SCREEN ==================== -->
+<div id="shop-screen" class="screen">
+  <div class="shop-layout">
+    <div class="shop-header">
+      <div style="font-size:40px;">🏪</div>
+      <div class="shop-title">متجر المدينة</div>
+      <div class="shop-gold">🪙 ذهبك: <span id="shop-gold-display">0</span></div>
+    </div>
+
+    <div class="shop-grid" id="shop-grid"></div>
+
+    <button class="btn" onclick="showScreen('game-screen')">← العودة للمدينة</button>
+  </div>
+</div>
+
+<!-- ==================== GAME OVER ==================== -->
+<div id="gameover-screen" class="screen">
+  <div class="big-icon">💀</div>
+  <div class="end-title dead">لقد هُزمت!</div>
+  <div class="end-msg" id="gameover-msg">سقطت في ظلام المعركة... لكن القوة تأتي من الانكسار.</div>
+  <button class="btn red" onclick="respawn()">🔄 العودة للمدينة</button>
+  <button class="btn" onclick="showScreen('title-screen')">🏠 القائمة الرئيسية</button>
+</div>
+
+<!-- ==================== WIN SCREEN ==================== -->
+<div id="win-screen" class="screen">
+  <div class="big-icon">👑</div>
+  <div class="end-title win">النصر المطلق!</div>
+  <div class="end-msg" id="win-msg">لقد هزمت التنين الأسود وأنقذت المملكة! ستُذكر بطولتك إلى الأبد!</div>
+  <div id="win-stats" style="color:#888;font-size:16px;margin-bottom:24px;"></div>
+  <button class="btn green" onclick="showScreen('title-screen')">🏠 العودة للقائمة</button>
+</div>
+
+<script>
+// ================================================================
+//  GAME DATA
+// ================================================================
+
+const CLASSES = {
+  warrior: {
+    icon: '⚔️', name: 'محارب',
+    hp: 150, mp: 40, atk: 20, def: 15, spd: 8, mag: 5, crit: 8,
+    hpPerLevel: 20, atkPerLevel: 4, defPerLevel: 3, mpPerLevel: 5,
+    skills: [
+      { id: 'attack',   name: 'ضربة قوية',   icon: '⚔️',  cost: 0,  type: 'physical', power: 1.0,  desc: 'هجوم أساسي' },
+      { id: 'slash',    name: 'جرح عميق',    icon: '🗡️',  cost: 10, type: 'physical', power: 1.6,  desc: 'يسبب نزيف' },
+      { id: 'shield',   name: 'درع الصخرة',  icon: '🛡️',  cost: 15, type: 'buff',     power: 0,    desc: 'يرفع دفاعك +5 للجولة' },
+      { id: 'berserk',  name: 'جنون القتال', icon: '💢',  cost: 30, type: 'physical', power: 2.5,  desc: 'هجوم مدمر' },
+    ]
+  },
+  mage: {
+    icon: '🔮', name: 'ساحر',
+    hp: 90,  mp: 100, atk: 10, def: 8, spd: 10, mag: 25, crit: 12,
+    hpPerLevel: 12, atkPerLevel: 2, defPerLevel: 1, mpPerLevel: 15,
+    skills: [
+      { id: 'attack',   name: 'ضربة سحرية', icon: '✨',  cost: 0,  type: 'magic',    power: 1.0,  desc: 'هجوم أساسي' },
+      { id: 'fireball', name: 'كرة النار',  icon: '🔥',  cost: 20, type: 'magic',    power: 2.0,  desc: 'أضرار نارية كبيرة' },
+      { id: 'ice',      name: 'جبل الجليد', icon: '❄️',  cost: 25, type: 'magic',    power: 1.8,  desc: 'يبطئ العدو' },
+      { id: 'thunder',  name: 'صاعقة',      icon: '⚡',  cost: 40, type: 'magic',    power: 3.0,  desc: 'ضربة برقية مميتة' },
+    ]
+  },
+  rogue: {
+    icon: '🗡️', name: 'خفي',
+    hp: 110, mp: 60, atk: 15, def: 10, spd: 18, mag: 10, crit: 25,
+    hpPerLevel: 15, atkPerLevel: 3, defPerLevel: 2, mpPerLevel: 8,
+    skills: [
+      { id: 'attack',    name: 'طعنة سريعة', icon: '🗡️',  cost: 0,  type: 'physical', power: 1.0,  desc: 'هجوم أساسي' },
+      { id: 'backstab',  name: 'طعن الظهر',  icon: '🎯',  cost: 15, type: 'physical', power: 1.8,  desc: 'فرصة حرج عالية' },
+      { id: 'smoke',     name: 'قنبلة دخان', icon: '💨',  cost: 20, type: 'debuff',   power: 0,    desc: 'تخفض دقة العدو' },
+      { id: 'deathblow', name: 'ضربة القاضية', icon: '💀', cost: 35, type: 'physical', power: 2.8,  desc: 'ضربة مميتة' },
+    ]
+  }
+};
+
+const LOCATIONS = {
+  town: {
+    emoji: '🏘️', name: 'مدينة الفجر', minLevel: 1,
+    desc: 'مكان دافئ للراحة والتسوق وتجهيز المعدات. النواس الصديق التاجر يرحب بك دائماً.',
+    actions: ['shop', 'heal', 'rest', 'quests']
+  },
+  forest: {
+    emoji: '🌲', name: 'غابة الأشباح', minLevel: 1,
+    desc: 'غابة مظلمة تسكنها وحوش خفيفة. مثالية لبدء تدريبك وجمع الذهب.',
+    actions: ['hunt', 'explore', 'gather']
+  },
+  cave: {
+    emoji: '🕳️', name: 'كهف الأنياب', minLevel: 5,
+    desc: 'كهف معتم مليء بالمخلوقات الشريرة. الخطر أعلى لكن المكافآت أفضل.',
+    actions: ['hunt', 'explore', 'bossfight']
+  },
+  castle: {
+    emoji: '🏰', name: 'القلعة الشريرة', minLevel: 10,
+    desc: 'قلعة الشر العظيمة. محصنة بأشرار من أعتى المحاربين. استعد جيداً.',
+    actions: ['hunt', 'explore', 'bossfight']
+  },
+  dragon: {
+    emoji: '🐉', name: 'وكر التنين الأسود', minLevel: 15,
+    desc: 'هنا يقطن التنين الأسود، مصدر الظلام الذي يلفّ المملكة. هل أنت مستعد؟',
+    actions: ['dragonboss', 'explore']
+  }
+};
+
+const ENEMIES = {
+  forest: [
+    { name: 'ذئب غابة',  art: '🐺', hp: 30, atk: 8,  def: 2,  xp: 20, gold: 5,  loot: ['ذهب'] },
+    { name: 'وحش أخضر', art: '👺', hp: 40, atk: 10, def: 3,  xp: 30, gold: 8,  loot: ['عشبة شفاء'] },
+    { name: 'عنكبوت عملاق', art: '🕷️', hp: 35, atk: 9, def: 4, xp: 25, gold: 6, loot: ['شبكة العنكبوت'] },
+    { name: 'لص غابة',   art: '🧟', hp: 45, atk: 12, def: 5,  xp: 35, gold: 15, loot: ['عشبة شفاء', 'ذهب'] },
+  ],
+  cave: [
+    { name: 'غول الكهف',   art: '👻', hp: 80, atk: 18, def: 8,  xp: 60, gold: 20, loot: ['حجر مضيء'] },
+    { name: 'وحش الصخر', art: '🗿', hp: 100, atk: 15, def: 15, xp: 70, gold: 25, loot: ['معدن نادر'] },
+    { name: 'خفاش ضخم',  art: '🦇', hp: 70, atk: 22, def: 6,  xp: 65, gold: 18, loot: ['جناح خفاش'] },
+    { name: 'أرواح شريرة', art: '💀', hp: 90, atk: 20, def: 10, xp: 80, gold: 30, loot: ['جوهر الشر'] },
+  ],
+  castle: [
+    { name: 'حارس القلعة',  art: '🪖', hp: 150, atk: 28, def: 20, xp: 120, gold: 40, loot: ['درع جندي'] },
+    { name: 'ساحر القلعة', art: '🧙', hp: 120, atk: 35, def: 12, xp: 130, gold: 50, loot: ['عصا سحرية'] },
+    { name: 'وحش الهاوية', art: '👾', hp: 180, atk: 32, def: 18, xp: 150, gold: 55, loot: ['نواة الهاوية'] },
+    { name: 'محارب شرير',  art: '🧛', hp: 200, atk: 30, def: 25, xp: 160, gold: 60, loot: ['سيف الدم'] },
+  ]
+};
+
+const BOSSES = {
+  cave: {
+    name: 'ملك الغول', art: '👹', hp: 200, atk: 25, def: 15, xp: 200, gold: 80,
+    desc: 'حاكم الكهف المظلم',
+    skills: ['ضربة مروعة', 'صرخة الرعب', 'شفاء الغول']
+  },
+  castle: {
+    name: 'أمير الظلام', art: '🧟‍♂️', hp: 400, atk: 40, def: 25, xp: 400, gold: 150,
+    desc: 'أمير القلعة الشريرة',
+    skills: ['تدمير الروح', 'ريح الجحيم', 'درع الظلام']
+  },
+  dragon: {
+    name: 'التنين الأسود', art: '🐲', hp: 800, atk: 55, def: 30, xp: 1000, gold: 500,
+    desc: 'الشر المطلق',
+    skills: ['نفث النار', 'عاصفة الظلام', 'غضب التنين', 'بلعم الروح']
+  }
+};
+
+const SHOP_ITEMS = [
+  { id: 'potion_small',  name: 'جرعة صغيرة',    icon: '🧪', price: 20,  desc: 'تعيد 40 صحة',           type: 'consumable', effect: { hp: 40 } },
+  { id: 'potion_big',    name: 'جرعة كبيرة',     icon: '⚗️', price: 50,  desc: 'تعيد 100 صحة',          type: 'consumable', effect: { hp: 100 } },
+  { id: 'mp_potion',     name: 'جرعة الطاقة',    icon: '💧', price: 35,  desc: 'تعيد 50 طاقة',           type: 'consumable', effect: { mp: 50 } },
+  { id: 'elixir',        name: 'إكسير الحياة',   icon: '✨', price: 100, desc: 'تعيد 200 صحة وطاقة',     type: 'consumable', effect: { hp: 200, mp: 100 } },
+  { id: 'iron_sword',    name: 'سيف حديدي',      icon: '🗡️', price: 60,  desc: '+8 هجوم',               type: 'weapon', effect: { atk: 8 } },
+  { id: 'steel_sword',   name: 'سيف فولاذي',     icon: '⚔️', price: 150, desc: '+20 هجوم',              type: 'weapon', effect: { atk: 20 } },
+  { id: 'magic_staff',   name: 'عصا السحر',      icon: '🪄', price: 120, desc: '+15 هجوم +10 سحر',      type: 'weapon', effect: { atk: 15, mag: 10 } },
+  { id: 'leather_armor', name: 'درع جلدي',       icon: '🥋', price: 50,  desc: '+6 دفاع',               type: 'armor', effect: { def: 6 } },
+  { id: 'chain_armor',   name: 'درع سلسلة',      icon: '🛡️', price: 130, desc: '+18 دفاع',              type: 'armor', effect: { def: 18 } },
+  { id: 'max_potion',    name: 'جرعة الفينيق',   icon: '🔥', price: 200, desc: 'تعيد الصحة الكاملة',    type: 'consumable', effect: { hp: 9999 } },
+];
+
+// ================================================================
+//  GAME STATE
+// ================================================================
+
+let G = {
+  hero: null,
+  currentLocation: 'town',
+  battle: null,
+  questFlags: { forest: false, cave: false, castle: false, dragon: false },
+  kills: 0,
+  bossKilled: { cave: false, castle: false },
+  dragonDefeated: false,
+};
+
+// ================================================================
+//  HERO
+// ================================================================
+
+function createHero() {
+  const name = document.getElementById('hero-name-input').value.trim();
+  if (!name) { alert('أدخل اسم بطلك!'); return; }
+  if (!G.selectedClass) { alert('اختر مهنتك!'); return; }
+
+  const cls = CLASSES[G.selectedClass];
+  G.hero = {
+    name,
+    classId: G.selectedClass,
+    classIcon: cls.icon,
+    className: cls.name,
+    level: 1,
+    xp: 0,
+    xpNext: 100,
+    gold: 50,
+    maxHp: cls.hp,
+    hp: cls.hp,
+    maxMp: cls.mp,
+    mp: cls.mp,
+    atk: cls.atk,
+    def: cls.def,
+    spd: cls.spd,
+    mag: cls.mag,
+    crit: cls.crit,
+    inventory: [{ id: 'potion_small', name: 'جرعة صغيرة', icon: '🧪', qty: 2, type: 'consumable', effect: { hp: 40 } }],
+    weapon: null,
+    armor: null,
+    skills: cls.skills,
+    buffDef: 0,
+  };
+
+  G.currentLocation = 'town';
+  goToGame();
+}
+
+function selectClass(cls) {
+  G.selectedClass = cls;
+  document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('class-' + cls).classList.add('selected');
+}
+
+// ================================================================
+//  NAVIGATION
+// ================================================================
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goToGame() {
+  showScreen('game-screen');
+  updateUI();
+  renderLocation('town');
+  log('story', `مرحباً يا ${G.hero.name}! رحلتك تبدأ الآن في مدينة الفجر. 🌅`);
+  log('story', 'اذهب للغابة لتبدأ المعركة وتكسب الخبرة والذهب.');
+}
+
+function goLocation(loc) {
+  const locData = LOCATIONS[loc];
+  if (G.hero.level < locData.minLevel) {
+    log('system', `⚠️ تحتاج مستوى ${locData.minLevel} للدخول إلى ${locData.name}`);
+    return;
+  }
+  G.currentLocation = loc;
+  document.querySelectorAll('.loc-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('loc-' + loc).classList.add('active');
+  renderLocation(loc);
+  log('system', `انتقلت إلى ${locData.name} ${locData.emoji}`);
+
+  if (!G.questFlags[loc] && loc !== 'town') {
+    G.questFlags[loc] = true;
+    updateQuestUI();
+  }
+}
+
+function renderLocation(loc) {
+  const locData = LOCATIONS[loc];
+  document.getElementById('loc-emoji').textContent = locData.emoji;
+  document.getElementById('loc-name').textContent = locData.name;
+  document.getElementById('loc-desc').textContent = locData.desc;
+
+  const grid = document.getElementById('action-grid');
+  grid.innerHTML = '';
+
+  locData.actions.forEach(act => {
+    const card = buildActionCard(act, loc);
+    grid.appendChild(card);
+  });
+}
+
+function buildActionCard(act, loc) {
+  const div = document.createElement('div');
+  div.className = 'action-card';
+  const configs = {
+    shop:      { icon: '🏪', name: 'المتجر',        desc: 'اشترِ معدات وجرعات', fn: () => openShop() },
+    heal:      { icon: '💊', name: 'المعالج',        desc: `علاج كامل - 20🪙`,   fn: () => healHero() },
+    rest:      { icon: '🛏️', name: 'الاستراحة',    desc: 'استعد 50 صحة مجاناً', fn: () => restHero() },
+    quests:    { icon: '📜', name: 'لوحة المهام',   desc: 'اعرف ماذا تفعل',      fn: () => showQuestInfo() },
+    hunt:      { icon: '⚔️', name: 'اصطياد الوحوش', desc: 'قاتل وكسب خبرة',     fn: () => startBattle(loc) },
+    explore:   { icon: '🔍', name: 'استكشاف',       desc: 'ابحث عن مفاجآت',      fn: () => explore(loc) },
+    gather:    { icon: '🌿', name: 'جمع أعشاب',     desc: 'اجمع مواد طبيعية',    fn: () => gatherHerbs() },
+    bossfight: { icon: '👹', name: 'مواجهة الزعيم', desc: 'قاتل الزعيم الكبير',  fn: () => startBossBattle(loc) },
+    dragonboss:{ icon: '🐉', name: 'مواجهة التنين', desc: '⚠️ الخطر الأقصى!',   fn: () => startBossBattle('dragon') },
+  };
+  const cfg = configs[act];
+  if (!cfg) return div;
+  div.innerHTML = `<div class="action-icon">${cfg.icon}</div><div class="action-name">${cfg.name}</div><div class="action-desc">${cfg.desc}</div>`;
+  div.onclick = cfg.fn;
+  return div;
+}
+
+// ================================================================
+//  TOWN ACTIONS
+// ================================================================
+
+function healHero() {
+  if (G.hero.gold < 20) { log('system', '⚠️ لا يوجد ذهب كافٍ للعلاج (يحتاج 20🪙)'); return; }
+  G.hero.gold -= 20;
+  const healed = G.hero.maxHp - G.hero.hp;
+  G.hero.hp = G.hero.maxHp;
+  G.hero.mp = G.hero.maxMp;
+  log('heal', `💊 تم العلاج الكامل! استعدت ${healed} صحة. (-20🪙)`);
+  updateUI();
+}
+
+function restHero() {
+  const restore = Math.min(50, G.hero.maxHp - G.hero.hp);
+  G.hero.hp = Math.min(G.hero.maxHp, G.hero.hp + 50);
+  G.hero.mp = Math.min(G.hero.maxMp, G.hero.mp + 20);
+  log('heal', `🛏️ استرحت واستعدت ${restore} صحة و20 طاقة.`);
+  updateUI();
+}
+
+function showQuestInfo() {
+  log('story', '📜 مهمتك: هزيمة التنين الأسود في وكره الرهيب!');
+  log('story', '📍 المسار: الغابة ← الكهف ← القلعة ← وكر التنين');
+  log('story', '💡 نصيحة: استخدم المتجر لتطوير معداتك ومخزونك.');
+}
+
+function gatherHerbs() {
+  const chance = Math.random();
+  if (chance > 0.3) {
+    const qty = Math.floor(Math.random() * 2) + 1;
+    addToInventory({ id: 'potion_small', name: 'جرعة صغيرة', icon: '🧪', qty, type: 'consumable', effect: { hp: 40 } });
+    log('loot', `🌿 وجدت ${qty} عشبة شفاء!`);
+  } else {
+    log('system', '🌿 لم تجد شيئاً هذه المرة...');
+  }
+  updateUI();
+}
+
+function explore(loc) {
+  const roll = Math.random();
+  if (roll < 0.2) {
+    const gold = Math.floor(Math.random() * 20) + 5;
+    G.hero.gold += gold;
+    log('loot', `💰 وجدت ${gold} قطعة ذهبية مخفية!`);
+  } else if (roll < 0.5) {
+    log('story', '🔍 وجدت آثاراً قديمة... لا شيء ثمين.');
+  } else if (roll < 0.7) {
+    startBattle(loc);
+    return;
+  } else {
+    log('system', '🔍 الطريق هادئ لا يوجد شيء.');
+  }
+  updateUI();
+}
+
+// ================================================================
+//  SHOP
+// ================================================================
+
+function openShop() {
+  showScreen('shop-screen');
+  document.getElementById('shop-gold-display').textContent = G.hero.gold;
+  const grid = document.getElementById('shop-grid');
+  grid.innerHTML = '';
+  SHOP_ITEMS.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'shop-item';
+    card.innerHTML = `
+      <div class="shop-icon">${item.icon}</div>
+      <div class="shop-name">${item.name}</div>
+      <div class="shop-desc">${item.desc}</div>
+      <div class="shop-price">🪙 ${item.price}</div>
+      <button class="btn ${G.hero.gold >= item.price ? 'green' : 'red disabled'}"
+        onclick="${G.hero.gold >= item.price ? `buyItem('${item.id}')` : ''}">
+        ${G.hero.gold >= item.price ? '🛒 شراء' : '💸 لا يوجد ذهب'}
+      </button>`;
+    grid.appendChild(card);
+  });
+}
+
+function buyItem(itemId) {
+  const item = SHOP_ITEMS.find(i => i.id === itemId);
+  if (!item || G.hero.gold < item.price) return;
+  G.hero.gold -= item.price;
+
+  if (item.type === 'weapon') {
+    if (G.hero.weapon) {
+      // remove old weapon bonus
+      G.hero.atk -= G.hero.weapon.effect.atk || 0;
+      if (G.hero.weapon.effect.mag) G.hero.mag -= G.hero.weapon.effect.mag;
+    }
+    G.hero.weapon = item;
+    G.hero.atk += item.effect.atk || 0;
+    if (item.effect.mag) G.hero.mag += item.effect.mag;
+    document.getElementById('eq-weapon').textContent = item.name;
+    log('shop', `🗡️ تجهزت بـ ${item.name}!`);
+  } else if (item.type === 'armor') {
+    if (G.hero.armor) G.hero.def -= G.hero.armor.effect.def || 0;
+    G.hero.armor = item;
+    G.hero.def += item.effect.def || 0;
+    document.getElementById('eq-armor').textContent = item.name;
+    log('shop', `🛡️ ارتديت ${item.name}!`);
+  } else {
+    addToInventory({ id: item.id, name: item.name, icon: item.icon, qty: 1, type: item.type, effect: item.effect });
+    log('shop', `🧪 اشتريت ${item.name}!`);
+  }
+
+  updateUI();
+  openShop();
+}
+
+// ================================================================
+//  INVENTORY
+// ================================================================
+
+function addToInventory(item) {
+  const existing = G.hero.inventory.find(i => i.id === item.id);
+  if (existing) { existing.qty += item.qty || 1; }
+  else { G.hero.inventory.push({ ...item, qty: item.qty || 1 }); }
+  renderInventory();
+}
+
+function renderInventory() {
+  const list = document.getElementById('inv-list');
+  if (!G.hero || G.hero.inventory.length === 0) {
+    list.innerHTML = '<div style="color:#555;font-size:13px;text-align:center;padding:10px;">المخزون فارغ</div>';
+    return;
+  }
+  list.innerHTML = '';
+  G.hero.inventory.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'inv-item';
+    div.innerHTML = `
+      <span class="inv-icon">${item.icon}</span>
+      <span class="inv-name">${item.name}</span>
+      <span class="inv-qty">x${item.qty}</span>
+      <button class="use-btn" onclick="useItem('${item.id}')">استخدم</button>`;
+    list.appendChild(div);
+  });
+}
+
+function useItem(itemId) {
+  const item = G.hero.inventory.find(i => i.id === itemId);
+  if (!item || item.qty <= 0) return;
+  const eff = item.effect;
+  let msg = `استخدمت ${item.name}:`;
+  if (eff.hp) { const h = Math.min(eff.hp, G.hero.maxHp - G.hero.hp); G.hero.hp = Math.min(G.hero.maxHp, G.hero.hp + eff.hp); msg += ` +${h} صحة`; }
+  if (eff.mp) { const m = Math.min(eff.mp, G.hero.maxMp - G.hero.mp); G.hero.mp = Math.min(G.hero.maxMp, G.hero.mp + eff.mp); msg += ` +${m} طاقة`; }
+  item.qty--;
+  if (item.qty <= 0) G.hero.inventory = G.hero.inventory.filter(i => i.id !== itemId);
+
+  // also update in battle
+  if (G.battle) {
+    updateBattleUI();
+    battleLog('heal', `🧪 ${msg}`);
+  } else {
+    log('heal', `🧪 ${msg}`);
+  }
+  updateUI();
+}
+
+// ================================================================
+//  BATTLE SYSTEM
+// ================================================================
+
+let battleAnimLocked = false;
+
+function startBattle(loc) {
+  const pool = ENEMIES[loc];
+  const enemy = { ...pool[Math.floor(Math.random() * pool.length)] };
+  const levelMult = 1 + (G.hero.level - 1) * 0.15;
+  enemy.maxHp = Math.floor(enemy.hp * levelMult);
+  enemy.hp = enemy.maxHp;
+  enemy.atk = Math.floor(enemy.atk * levelMult);
+  enemy.def = Math.floor(enemy.def * (1 + (G.hero.level - 1) * 0.1));
+  enemy.isBoss = false;
+  G.battle = { enemy, location: loc, turn: 0, heroBuffDef: 0, enemyDebuffed: false };
+  openBattleScreen();
+}
+
+function startBossBattle(loc) {
+  const boss = { ...BOSSES[loc] };
+  boss.maxHp = boss.hp;
+  boss.isBoss = true;
+  G.battle = { enemy: boss, location: loc, turn: 0, heroBuffDef: 0, enemyDebuffed: false };
+  openBattleScreen();
+  battleLog('story', `⚠️ واجهت ${boss.name}! ${boss.desc}`);
+}
+
+function openBattleScreen() {
+  showScreen('battle-screen');
+  document.getElementById('battle-log').innerHTML = '';
+  const h = G.hero;
+  const e = G.battle.enemy;
+  document.getElementById('battle-hero-art').textContent = h.classIcon;
+  document.getElementById('battle-hero-name').textContent = h.name;
+  document.getElementById('battle-enemy-art').textContent = e.art;
+  document.getElementById('battle-enemy-name').textContent = e.name;
+  document.getElementById('b-enemy-type').textContent = e.isBoss ? '👹 زعيم' : '⚔️ عدو';
+  battleLog('story', `⚔️ لقيت ${e.name}!`);
+  renderSkills();
+  updateBattleUI();
+}
+
+function renderSkills() {
+  const grid = document.getElementById('skills-grid');
+  grid.innerHTML = '';
+  G.hero.skills.forEach(skill => {
+    const btn = document.createElement('button');
+    btn.className = 'skill-btn';
+    btn.disabled = skill.cost > G.hero.mp;
+    btn.innerHTML = `
+      <span class="skill-icon">${skill.icon}</span>
+      <span class="skill-name">${skill.name}</span>
+      <span class="skill-cost">${skill.cost > 0 ? `💧${skill.cost}` : 'مجاني'}</span>
+      <span class="skill-dmg">${skill.type === 'buff' || skill.type === 'debuff' ? skill.desc : '⚔️ هجوم'}</span>`;
+    btn.onclick = () => heroTurn(skill);
+    grid.appendChild(btn);
+  });
+}
+
+function heroTurn(skill) {
+  if (battleAnimLocked) return;
+  battleAnimLocked = true;
+
+  const h = G.hero;
+  const b = G.battle;
+  const e = b.enemy;
+  b.turn++;
+
+  // consume MP
+  h.mp = Math.max(0, h.mp - skill.cost);
+
+  let dmg = 0;
+  let isCrit = false;
+
+  if (skill.type === 'buff') {
+    b.heroBuffDef += 5;
+    battleLog('heal', `🛡️ رفعت دفاعك! (+5 دفاع للجولة)`);
+  } else if (skill.type === 'debuff') {
+    b.enemyDebuffed = true;
+    battleLog('combat', `💨 أعميت العدو! دقته أقل الآن.`);
+  } else {
+    const baseDmg = skill.type === 'magic'
+      ? Math.floor(h.mag * skill.power * (1 + h.mag / 100))
+      : Math.floor(h.atk * skill.power);
+
+    isCrit = Math.random() * 100 < h.crit;
+    dmg = Math.max(1, baseDmg - e.def + Math.floor(Math.random() * 6));
+    if (isCrit) dmg = Math.floor(dmg * 2);
+    dmg = Math.max(1, dmg);
+    e.hp = Math.max(0, e.hp - dmg);
+
+    const critText = isCrit ? ' 💥 ضربة حرجة!' : '';
+    battleLog('combat', `${skill.icon} ${skill.name}: أصبت ${e.name} بـ ${dmg} ضرر!${critText}`);
+    spawnFloater(`-${dmg}`, isCrit ? '#ff4444' : '#ffaa44', 'enemy');
+  }
+
+  updateBattleUI();
+
+  setTimeout(() => {
+    if (e.hp <= 0) {
+      battleWin();
+    } else {
+      enemyTurn();
+    }
+  }, isCrit ? 800 : 500);
+}
+
+function enemyTurn() {
+  const h = G.hero;
+  const b = G.battle;
+  const e = b.enemy;
+
+  let dmg = 0;
+  let action = '';
+
+  // boss special skills
+  if (e.isBoss && e.skills && Math.random() < 0.35) {
+    const sk = e.skills[Math.floor(Math.random() * e.skills.length)];
+    if (sk === 'شفاء الغول' || sk === 'درع الظلام') {
+      const heal = Math.floor(e.maxHp * 0.1);
+      e.hp = Math.min(e.maxHp, e.hp + heal);
+      battleLog('combat-enemy', `${e.art} ${e.name} استخدم ${sk}: استعاد ${heal} صحة!`);
+      updateBattleUI();
+      setTimeout(() => { battleAnimLocked = false; renderSkills(); }, 600);
+      return;
+    }
+    dmg = Math.floor(e.atk * 1.5);
+    action = sk;
+  } else {
+    dmg = e.atk;
+    action = 'هجوم عادي';
+  }
+
+  if (b.enemyDebuffed && Math.random() < 0.4) {
+    battleLog('combat-enemy', `${e.art} ${e.name} أخطأ الهدف!`);
+    dmg = 0;
+    b.enemyDebuffed = false;
+  }
+
+  const totalDef = h.def + (b.heroBuffDef || 0);
+  dmg = Math.max(1, dmg - totalDef + Math.floor(Math.random() * 4));
+  b.heroBuffDef = 0;
+  h.hp = Math.max(0, h.hp - dmg);
+
+  if (dmg > 0) {
+    battleLog('combat-enemy', `${e.art} ${e.name} (${action}): آذاك بـ ${dmg} ضرر!`);
+    spawnFloater(`-${dmg}`, '#cc3333', 'hero');
+  }
+
+  updateBattleUI();
+
+  setTimeout(() => {
+    if (h.hp <= 0) {
+      battleLose();
+    } else {
+      battleAnimLocked = false;
+      renderSkills();
+    }
+  }, 500);
+}
+
+function battleWin() {
+  const e = G.battle.enemy;
+  const h = G.hero;
+  G.kills++;
+  h.gold += e.gold;
+  const xpGained = e.xp;
+  battleLog('loot', `🎉 انتصرت على ${e.name}!`);
+  battleLog('loot', `💰 +${e.gold} ذهب | ⭐ +${xpGained} خبرة`);
+
+  if (e.loot && e.loot.length > 0 && Math.random() < 0.4) {
+    const lootName = e.loot[Math.floor(Math.random() * e.loot.length)];
+    battleLog('loot', `📦 غنيمة: ${lootName}!`);
+    addToInventory({ id: 'potion_small', name: 'جرعة صغيرة', icon: '🧪', qty: 1, type: 'consumable', effect: { hp: 40 } });
+  }
+
+  if (e.isBoss) {
+    if (G.battle.location === 'dragon') {
+      G.dragonDefeated = true;
+      setTimeout(() => showWin(), 2000);
+    } else {
+      G.bossKilled[G.battle.location] = true;
+    }
+  }
+
+  gainXP(xpGained);
+  setTimeout(() => {
+    G.battle = null;
+    battleAnimLocked = false;
+    showScreen('game-screen');
+    updateUI();
+    renderLocation(G.currentLocation);
+    log('loot', `⚔️ عدت من المعركة منتصراً!`);
+    if (e.isBoss && G.battle === null && !G.dragonDefeated) {
+      log('story', `🏆 هزمت الزعيم ${e.name}! استمر في مسيرتك!`);
+    }
+  }, G.dragonDefeated ? 3000 : 2000);
+}
+
+function battleLose() {
+  const e = G.battle.enemy;
+  battleLog('combat-enemy', `💀 سقطت في المعركة ضد ${e.name}!`);
+  setTimeout(() => {
+    G.battle = null;
+    battleAnimLocked = false;
+    document.getElementById('gameover-msg').textContent = `سقطت أمام ${e.name}... لكن الموت بداية جديدة للبطل الحقيقي!`;
+    showScreen('gameover-screen');
+  }, 2000);
+}
+
+function tryFlee() {
+  const chance = 0.5 + (G.hero.spd / 100);
+  if (Math.random() < chance) {
+    battleLog('system', '🏃 فررت من المعركة!');
+    setTimeout(() => {
+      G.battle = null;
+      battleAnimLocked = false;
+      showScreen('game-screen');
+      updateUI();
+      log('system', '🏃 عدت بسلام من المعركة.');
+    }, 800);
+  } else {
+    battleLog('system', '⚠️ فشلت في الفرار!');
+    setTimeout(() => { enemyTurn(); }, 500);
+  }
+}
+
+function respawn() {
+  G.hero.hp = Math.floor(G.hero.maxHp * 0.5);
+  G.hero.mp = Math.floor(G.hero.maxMp * 0.5);
+  G.currentLocation = 'town';
+  showScreen('game-screen');
+  updateUI();
+  renderLocation('town');
+  log('system', '💀 عدت من الموت في مدينة الفجر بنصف صحتك...');
+}
+
+// ================================================================
+//  LEVEL UP
+// ================================================================
+
+function gainXP(amount) {
+  G.hero.xp += amount;
+  while (G.hero.xp >= G.hero.xpNext) {
+    G.hero.xp -= G.hero.xpNext;
+    levelUp();
+  }
+  updateUI();
+}
+
+function levelUp() {
+  const h = G.hero;
+  const cls = CLASSES[h.classId];
+  h.level++;
+  h.xpNext = Math.floor(100 * Math.pow(1.4, h.level - 1));
+  h.maxHp += cls.hpPerLevel;
+  h.hp = h.maxHp;
+  h.maxMp += cls.mpPerLevel;
+  h.mp = h.maxMp;
+  h.atk += cls.atkPerLevel;
+  h.def += cls.defPerLevel;
+  h.spd += 1;
+  h.crit = Math.min(50, h.crit + 0.5);
+
+  log('level', `🌟 ارتقيت للمستوى ${h.level}! +${cls.hpPerLevel}HP +${cls.atkPerLevel}ATK +${cls.defPerLevel}DEF`);
+
+  updateLocationUnlocks();
+}
+
+function updateLocationUnlocks() {
+  const lvl = G.hero.level;
+  const locs = ['cave', 'castle', 'dragon'];
+  const minLevels = [5, 10, 15];
+  locs.forEach((loc, i) => {
+    const btn = document.getElementById('loc-' + loc);
+    if (lvl >= minLevels[i]) btn.classList.remove('locked');
+  });
+}
+
+// ================================================================
+//  WIN
+// ================================================================
+
+function showWin() {
+  const h = G.hero;
+  document.getElementById('win-stats').innerHTML =
+    `البطل: ${h.name} | المهنة: ${h.className} | المستوى: ${h.level}<br>القتلى: ${G.kills} | الذهب المكتسب: ${h.gold}🪙`;
+  showScreen('win-screen');
+}
+
+// ================================================================
+//  UI UPDATE
+// ================================================================
+
+function updateUI() {
+  if (!G.hero) return;
+  const h = G.hero;
+  document.getElementById('ui-class-icon').textContent = h.classIcon;
+  document.getElementById('ui-hero-name').textContent = h.name;
+  document.getElementById('ui-level').textContent = `مستوى ${h.level}`;
+  document.getElementById('ui-gold').textContent = h.gold;
+
+  const hpPct = (h.hp / h.maxHp) * 100;
+  const mpPct = (h.mp / h.maxMp) * 100;
+  const xpPct = (h.xp / h.xpNext) * 100;
+
+  document.getElementById('ui-hp-bar').style.width = hpPct + '%';
+  document.getElementById('ui-mp-bar').style.width = mpPct + '%';
+  document.getElementById('ui-xp-bar').style.width = xpPct + '%';
+  document.getElementById('ui-hp-val').textContent = `${h.hp}/${h.maxHp}`;
+  document.getElementById('ui-mp-val').textContent = `${h.mp}/${h.maxMp}`;
+  document.getElementById('ui-xp-val').textContent = `${h.xp}/${h.xpNext}`;
+
+  document.getElementById('stat-atk').textContent = h.atk;
+  document.getElementById('stat-def').textContent = h.def;
+  document.getElementById('stat-spd').textContent = h.spd;
+  document.getElementById('stat-mag').textContent = h.mag;
+  document.getElementById('stat-crit').textContent = h.crit + '%';
+  document.getElementById('stat-kills').textContent = G.kills;
+
+  renderInventory();
+  updateLocationUnlocks();
+}
+
+function updateBattleUI() {
+  const h = G.hero;
+  const e = G.battle?.enemy;
+  if (!e) return;
+  const hpPct = (h.hp / h.maxHp) * 100;
+  const mpPct = (h.mp / h.maxMp) * 100;
+  const ehpPct = (e.hp / e.maxHp) * 100;
+
+  document.getElementById('b-hero-hp').style.width = hpPct + '%';
+  document.getElementById('b-hero-mp').style.width = mpPct + '%';
+  document.getElementById('b-hero-hp-val').textContent = `${h.hp}/${h.maxHp}`;
+  document.getElementById('b-hero-mp-val').textContent = `${h.mp}/${h.maxMp}`;
+  document.getElementById('b-enemy-hp').style.width = ehpPct + '%';
+  document.getElementById('b-enemy-hp-val').textContent = `${e.hp}/${e.maxHp}`;
+  document.getElementById('b-enemy-rage').style.width = ehpPct + '%';
+  updateUI();
+}
+
+function updateQuestUI() {
+  const quests = { forest: 'q-forest', cave: 'q-cave', castle: 'q-castle', dragon: 'q-dragon' };
+  Object.entries(quests).forEach(([loc, elId]) => {
+    const el = document.getElementById(elId);
+    if (G.questFlags[loc]) {
+      el.textContent = '✅ ' + el.textContent.replace('○ ', '');
+      el.classList.add('quest-done');
+      el.classList.remove('quest-pending');
+    }
+  });
+}
+
+// ================================================================
+//  LOGGING
+// ================================================================
+
+function log(type, msg) {
+  const logEl = document.getElementById('game-log');
+  if (!logEl) return;
+  const div = document.createElement('div');
+  div.className = `log-entry ${type}`;
+  div.textContent = msg;
+  logEl.appendChild(div);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function battleLog(type, msg) {
+  const logEl = document.getElementById('battle-log');
+  if (!logEl) return;
+  const div = document.createElement('div');
+  div.className = `log-entry ${type}`;
+  div.textContent = msg;
+  logEl.appendChild(div);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function clearLog() {
+  const logEl = document.getElementById('game-log');
+  if (logEl) logEl.innerHTML = '';
+}
+
+// ================================================================
+//  DAMAGE FLOATER
+// ================================================================
+
+function spawnFloater(text, color, target) {
+  const el = document.createElement('div');
+  el.className = 'damage-floater';
+  el.textContent = text;
+  el.style.color = color;
+  el.style.fontFamily = "'Amiri', serif";
+
+  const rect = document.getElementById(`battle-${target}-art`)?.getBoundingClientRect();
+  if (rect) {
+    el.style.left = (rect.left + rect.width / 2 - 20) + 'px';
+    el.style.top = (rect.top - 10) + 'px';
+  } else {
+    el.style.left = '50%'; el.style.top = '40%';
+  }
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+
+// ================================================================
+//  SAVE / LOAD
+// ================================================================
+
+function saveGame() {
+  localStorage.setItem('rpg_save', JSON.stringify({ G }));
+}
+
+function loadGame() {
+  const save = localStorage.getItem('rpg_save');
+  if (!save) { alert('لا يوجد ملف حفظ!'); return; }
+  const data = JSON.parse(save);
+  G = data.G;
+  goToGame();
+}
+
+// Auto-save
+setInterval(() => { if (G.hero) saveGame(); }, 30000);
+
+// ================================================================
+//  INIT
+// ================================================================
+
+log('system', 'مرحباً بك في مملكة الظلام! اضغط "ابدأ المغامرة" للبدء.');
+</script>
+</body>
+</html>
